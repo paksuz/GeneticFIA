@@ -1,6 +1,8 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Solucion {
+public class Solucion implements Cloneable {
 
     public final int nVariables = SetCoveringInstanceFile.getInstance().getCols();
     public int[] x = new int[nVariables];
@@ -10,45 +12,6 @@ public class Solucion {
     int[] taboo = new int[nVariables]; //variable taboo
  
 
-  
-
-    public void move(Solucion overallBest) {
-        for (int j = 0; j < nVariables; j++) {
-            /* Update velocity */
-            v = SetCoveringInstanceFile.getInstance().rnd.nextDouble() * (overallBest.x[j] - pBest[j]);
-                    
-
-            /* Update position */
-            x[j] = toBinary(v);
-        }
-    }
-    
-    public void decrementarTaboo() {
-    	
-    	for(int i=0;i<nVariables;i++) {
-    		if(taboo[i]>0) {
-    			taboo[i]--;
-    		}
-    	}
-    }
-    
-    public void setTaboo(int tabooRate, int pos) {
-    	
-    	taboo[pos]=tabooRate;
-    }
-    
-    public int tabooCheck(int pos) {
-    	
-    	return taboo[pos];
-    }
-
- 
-    
-    public Solucion(int[]x) {
-    	
-    	this.x=x;
-    }
-    
 
     public Solucion() {
         for (int j = 0; j < nVariables; j++) {
@@ -83,11 +46,11 @@ public class Solucion {
     public void mutate(double rate) {
     	for(int i=0;i<nVariables;i++) {
         	double random = ThreadLocalRandom.current().nextDouble(0,1);
-    		if(random <= rate) {
-    			if(x[i]==0) {
-    				x[i]=1;
-    			}else if(x[i]==1) {
-    				x[i]=0;
+    		if(rate <= random) {
+    			if(this.x[i]==0) {
+    				this.x[i]=1;
+    			}else  {
+    				this.x[i]=0;
        			}
     		}
     	} 	
@@ -141,6 +104,30 @@ public class Solucion {
     	}
     	
     }
+    public void set(int i, int x) {
+    	 this.x[i]= x;
+    }
+    public int get(int i) {
+    	return x[i];
+    }
+    
+    public Solucion getCopy()
+    {
+    	Solucion copy = null;
+
+    try
+        {
+        copy = (Solucion)(this.clone());
+        }
+    catch (Exception e)
+        {
+        e.printStackTrace();
+        }
+
+    return copy;
+    }
+   
+
 
 
    
