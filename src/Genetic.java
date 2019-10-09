@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 1;
+    private final int T = 10000;
     private int poblacionsize = 100;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
     public Solucion ganador1;
@@ -83,9 +83,9 @@ public class Genetic {
      	 			
      	 		hijo.mutate(mutateRate);	
      	 		
-     	 		}while((!hijo.isFeasible())&&(hijo.fitness()<best.fitness()));
-     	 		System.out.println("hijo fitness:"+hijo.fitness());
-     	 		System.out.println("best fitness:"+best.fitness());	
+     	 		}while((!hijo.isFeasible()));
+     	 	//	System.out.println("hijo fitness:"+hijo.fitness());
+     	 	//	System.out.println("best fitness:"+best.fitness());	
      	 		
      	 	//	System.out.println("hijo nuevo"+hijo.fitness());
      	 		
