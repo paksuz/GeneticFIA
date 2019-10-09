@@ -10,257 +10,128 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 2;
-    private int poblacionsize = 20;
+    private final int T = 1;
+    private int poblacionsize = 100;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
-    private Random rnd = new Random();
     public Solucion ganador1;
     public Solucion ganador2;
-    public Solucion bestoverall = new Solucion();
     public  ArrayList<Solucion> bestpoblacion = new ArrayList<>();
     public  ArrayList<Solucion> crossoverpoblacion = new ArrayList<>();
-    public int tabooRate = 0;
+    public Solucion hijo= new Solucion();
     public double[] probAc = new double[poblacionsize];
-    public double [] rankAc ;
-    public double elitistrate=0.10;
-    public double mutateRate= 0.03;
-    public double alpha=0.7;
-    
-    
-    
-    
-    
-
+    public double elitistrate=0.01;
+    public Solucion best;
+    public double mutateRate= 0.3;
 
     public void execute() {
         initRandom();
-        initProbs();
        // System.out.println("primer best mejor:"+getbest().fitness());
         
         
         
         run();
     }
-    public void ordenaxrank() {
-     	
-    	ordenarxfitness();
-      	 
-       	//Collections.reverse(poblacion);
-       	SplitRank();
-       	
-       /*	Collections.sort(poblacion, new Comparator<Solucion>() {
-   		    @Override
-   		    public int compare(Solucion c1, Solucion c2) {
-   		        return Double.compare(c1.rank, c2.rank);
-   		    }
-   		});
-    	*/
-      
-    }
+
     
-    public void ordenarxfitness() {
-   	 Collections.sort(poblacion, new Comparator<Solucion>() {
+    public void ordenarxfitness(ArrayList<Solucion> pob) {
+   	 Collections.sort(pob, new Comparator<Solucion>() {
 		    @Override
 		    public int compare(Solucion c1, Solucion c2) {
-		        return Double.compare(c1.fitness, c2.fitness);
+		        return Double.compare(c1.fitness(), c2.fitness());
 		    }
 		});
-    	
-    	
+   	 
+   
     	
     }
     
    
     
     private void run() {
-    	//ordena la lista por fintess y luego calcula el ranking
-    	//luego la reordena en base a su ranking
-    	//ordenaxrank();
-    	//ordenarxfitness();
-  /*	for(int i=0;i<poblacion.size();i++) {
-    		System.out.println(poblacion.get(i).rank);
-    	//System.out.println(poblacion.get(i).fitness);
-    	}
- 	for(int i=0;i<poblacion.size();i++) {
-		//System.out.println(poblacion.get(i).rank);
-	System.out.println(poblacion.get(i).fitness);
-	}
-    	*/
-  	//	System.out.println("fitness mejor :"+getbest().fitness());
-    //	seleccion();
-    //	bestOverall();
-    //	System.out.println("fitness mejor de Todos los tiempos :"+bestoverall.fitness());
+    	
     	
     	int t = 0;
-
+    	ordenarxfitness(poblacion);
+    	best = poblacion.get(0);
         while (t < T) {
-        //	SplitRank();
-        		
-        	calcularFitness();
-        	bestpoblacion.clear();
-        	crossoverpoblacion.clear();
+        
         	int numerodeElitistas = (int) (poblacion.size() * elitistrate); //condicion basada en elitismo
-        //	Collections.reverse(poblacion);
         	 //poblacion ordenada por fitness de menor a mayor
-        	ordenarxfitness();
-     	 for(int i=0;i<numerodeElitistas;i++) {
-     		 
-     		 bestpoblacion.add(poblacion.get(i));
-     		 
-     		 
-     	
-     		
-     	 }  
-     	 
-     	 for(int i=0;i<bestpoblacion.size();i++) {
-     		 System.out.println("ELitista POB FItness: "+bestpoblacion.get(i).fitness);
-     		 
-     	 }
+        	bestpoblacion=new ArrayList<>(numerodeElitistas);
+        	
+        	
+     	 for(int i=0;i<numerodeElitistas;i++) {     		 
+     		 bestpoblacion.add(poblacion.get(i));     		 
+     	 }       	 
+    
      	 //se crea una poblacion nueva solo con elitistas
-     	 int numeroCrossover = (int)(poblacionsize-numerodeElitistas)/2;
-     	 ordenaxrank();
+     	 int numeroCrossover = (int)(poblacion.size()-numerodeElitistas);
+     	// ordenaxrank(poblacion);
+     	crossoverpoblacion= new ArrayList<>(numeroCrossover);
+     	
      	//Collections.reverse(poblacion);
      	 	for(int j =0;j<numeroCrossover;j++) {
+     	 		do {
+     	 		ganador1=(Solucion)ruleta() ; 
+     	 		ganador2=(Solucion)ruleta();
+     	 	//	System.out.println("padre1 "+ganador1.fitness());
+     	 	//	System.out.println("padre2 "+ganador2.fitness());
+     	 	//	System.out.println("Ganador1"+ganador1.fitness());
      	 		
-     	 		ganador1=splitrankruleta() ;
+     	 		 hijo = crossover(ganador1,ganador2,hijo);
      	 		
-     	 		ganador2=splitrankruleta();
+     	 			
+     	 		hijo.mutate(mutateRate);	
      	 		
-     	 	
+     	 		}while((!hijo.isFeasible())&&(hijo.fitness()<best.fitness()));
+     	 		System.out.println("hijo fitness:"+hijo.fitness());
+     	 		System.out.println("best fitness:"+best.fitness());	
      	 		
-     	 		crossover();
+     	 	//	System.out.println("hijo nuevo"+hijo.fitness());
      	 		
-     	 		crossoverpoblacion.add(ganador1);
-     	 		crossoverpoblacion.add(ganador2);
+     	 		crossoverpoblacion.add(hijo); 		
+     	 		
+     	 		
      	 	}
-     	 
-     	 	//por la cantidad de crossovers que se generaron se muta cada bit de cada solucion
-     	 	//y si no es factible, se genera una nueva factible
      	 	
-     	 	for(int j=0;j<crossoverpoblacion.size();j++) {
-     	 		crossoverpoblacion.get(j).mutate(mutateRate);
-     	 		if(!(crossoverpoblacion.get(j).isFeasible())) {
-     	 			Solucion p; 
-     	 			do {
-     	                p = new Solucion();
-     	            } while (!p.isFeasible());
-     	 			
-     	 			
-     	 		//	System.out.println("infactible");
-     	 			
-     	 		}
-     	 	}//updateamos nuestra poblacion
-     	 	 poblacion.clear();
-         	 poblacion = new ArrayList<Solucion>(bestpoblacion); 
-        	 poblacion.addAll(crossoverpoblacion);
-      	 
+     	 	
+     	 	crossoverpoblacion.addAll(bestpoblacion);
+     	 	
+     	 	poblacion = crossoverpoblacion;
+     	 	ordenarxfitness(poblacion);
+     	 	best = poblacion.get(0);
+     	 	
+     	 	
 
-        	 calcularFitness();
-
-       /* 	 Collections.sort(poblacion, new Comparator<Solucion>() {
-     		    @Override
-     		   public int compare(Solucion c1, Solucion c2) {
-     		        return Double.compare(c1.fitness, c2.fitness);
-     		    }
-     		});*/
-        	 
-     //   	 Collections.reverse(poblacion);
-        	 
-        	 
-        // System.out.println("bestOverall en T " + bestoverall.fitness);
      		 t++;
             
-          toConsole(t);
+         toConsole(t);
         }
 
     }
-    public void calcularFitness() {
-    	for(int i=0;i<poblacion.size();i++) {
-    		
-    		poblacion.get(i).updateFit();
-    		
-    	}
-    }
+
+    
     
 
-    public void SplitRank() {
-    	double rank = 0;
-    	int k = poblacion.size();
-    	double beta = 1 - alpha;
-    	for(int i=0;i<poblacion.size();i++) {
-    	
-    		if(i <= (k)/2) {
-    			rank = 8 *i;
-    			rank = rank /((k*k)-1);
-    			rank = beta - rank;
-    			
-    			
-    			poblacion.get(i).rank = rank;
-    		//	poblacion.get(i).rank= beta - ((8*i)/((k*k)-1)) ;
-    			
-    		}else if(i>k/2) {
-    			
-    			rank = 3*k;
-    			rank = rank +1;
-    			rank = rank *(k+1);
-    			rank = alpha+(8*i)/rank;
-    			poblacion.get(i).rank=rank;
-    			//poblacion.get(i).rank= alpha + ((8*i)/((k+1)*(3*k+1)));
-    			
-    		}
-    		
-    		
-    	}
-    	
-    	
-    	
-    }
-    
-    public Solucion splitrankruleta() {
-    	double min = 0;
-    	double max = poblacion.get(poblacion.size()-1).rank;
-    	
-    	
-    	double random = ThreadLocalRandom.current().nextDouble(min, max);
-    	for(int i=0;i<poblacion.size();i++) {
-    		
-    		if(random < poblacion.get(i).rank) {
-
-    	
-
-    			return poblacion.get(i);
-    		}
-    		
-    	}
-    	return null;
-    }
-    	
-    public Solucion getBest() {
-    	double min = Double.MAX_VALUE;
-    	int minindex=0;
-    	for(int i=0;i<poblacion.size();i++) {
-    		if(poblacion.get(i).fitness<min) {
-    			min = poblacion.get(i).fitness;
-    			minindex=i;
-    		}
-    	}
-    	return poblacion.get(minindex);
-    	
-    }
-    	
-    	
     
     
     
     
     public Solucion ruleta() {
-    	    	
+    	//System.out.println("---------------------------------------\n");
     	initProbs();
-    	  System.out.println("---------------------------------------\n");
-   System.out.println("Probabilidad Acumulada Total"+ probAc[poblacionsize-1]);
+ /* 	for(int i=0;i<probAc.length;i++) {
+    		
+      	  System.out.println("Probabilidad Acumulada "+ probAc[i]);
+      	System.out.println("Probabilidad Acumulada "+ poblacion.get(i).fitness());
+    		
+    	}
+    	System.out.println("---------------------------------------\n");
+    	  System.out.println("---------------------------------------\n");*/
+    	 
     	
-    	double random = ThreadLocalRandom.current().nextDouble(20, 99);
-   // 	System.out.println("random porcentaje :"+random);
+    	double random = ThreadLocalRandom.current().nextDouble(probAc[0],probAc[probAc.length/2]) ;
+    //	System.out.println("random porcentaje :"+random);
     	
     	
     	for(int i=poblacion.size()-1;i>0; i--) {
@@ -270,11 +141,12 @@ public class Genetic {
     		/*	System.out.println("Fitness del Elemento escogido:" + poblacion.get(i).fitness() );
     			System.out.println("Probabilidad del elemento escogido :" + probAc[i]) ;
     			System.out.println("prob siguiente:" + probAc[i+1] +"...\n" );*/
-
+    		//	System.out.println("Fitness ruleta: "+poblacion.get(i).fitness()+"prob:"+probAc[i]);
     			return poblacion.get(i);
-    		}
+    		}else if(i==0) return poblacion.get(0);
     		
     	}
+    	System.out.println("---------------------------------------\n");
     	return null;
     }
        
@@ -300,47 +172,61 @@ public class Genetic {
     	double sumapoblacion =0.0;
     	double pesofitness= 0.0;
     	for(int i=0;i<poblacion.size();i++) {
-    		sumapoblacion += poblacion.get(i).fitness;
+    		sumapoblacion += poblacion.get(i).fitness();
     		
     	}
-		pesofitness =  sumapoblacion-poblacion.get(0).fitness;
+		pesofitness =  poblacion.get(0).fitness();
 		pesofitness = pesofitness/sumapoblacion;
 		probAc[0]= pesofitness;
 		
     	for(int i=1;i<poblacion.size();i++) {
-    		pesofitness =  sumapoblacion-poblacion.get(i).fitness;
+    		pesofitness =  poblacion.get(i).fitness();
     		pesofitness = pesofitness/sumapoblacion;
     		probAc[i]= probAc[i-1] + pesofitness;
     		
-    	}    	
+    	}   
+    	
+    	/*
+    	for(int i=0;i<poblacion.size();i++) {
+    	System.out.println("prob AC:"+probAc[i]);
+    	}*/
     }
     
  
 
-    public void crossover() {
+    public Solucion crossover(Solucion padre1,Solucion padre2, Solucion crossresult) {
+    //	System.out.println("AAA"+padre1.nVariables);
     	
-        //Select a random crossover point
-    	
-        int crossOverPoint = ThreadLocalRandom.current().nextInt(0,poblacion.get(0).nVariables-1 );
-        for(int i=0;i<crossOverPoint;i++) {
-
-        //Swap values among parents
-            int temp = ganador1.x[i];          
-            ganador1.x[i] = ganador2.x[i]; 
-            ganador2.x[i] = temp;
-
-        }
-        ganador1.updateFit();
-        ganador2 .updateFit();
-       
+    	for(int i=0;i<padre1.nVariables;i++) {
+    		//si son iguales se mantiene
+    		if(padre1.x[i]==padre2.x[i]) {
+    			crossresult.x[i]=padre1.x[i];
+    		}else {
+    			double sumapadres = padre1.fitness()+padre2.fitness();
+    			double pesopadre1 = padre2.fitness()/sumapadres;
+    			double pesopadre2 = 1-pesopadre1;
+    			double random = ThreadLocalRandom.current().nextDouble(0,1) ;
+    			if(random <= pesopadre1) {
+    				crossresult.x[i]=padre1.x[i];
+    			}else {
+    				crossresult.x[i]=padre2.x[i];
+    				
+    			}
+    				
+    		}
+    		
+    		
+    		
         
+    }
+    	 return	crossresult;   
     }
 
 
 
 
  private void toConsole(int t) {
-    	System.out.println("Generation:  " + t + " Fittest:  " + getBest().fitness);
+    	System.out.println("Generation:  " + t + " Fittest:  " +best.fitness() );
     	
 
     }

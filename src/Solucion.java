@@ -6,22 +6,11 @@ public class Solucion {
     public int[] x = new int[nVariables];
     public int[] pBest = new int[nVariables];
     private double v;
-    public double fitness;
     public double rank ;
     int[] taboo = new int[nVariables]; //variable taboo
  
-    public void updateFit() {
-    	this.fitness = fitness();
-    }
-    
-    public void updatepBest() {
-    	
-    	if(fitness<fitnesspBest()) {
-    		pBest = x;
-    	}
-    	
-    }
-    
+
+  
 
     public void move(Solucion overallBest) {
         for (int j = 0; j < nVariables; j++) {
@@ -68,7 +57,7 @@ public class Solucion {
         }
         
         v = SetCoveringInstanceFile.getInstance().rnd.nextDouble(); 
-        fitness= fitness();
+       
     }
 
 
@@ -143,11 +132,6 @@ public class Solucion {
 	return true;
     }
 
-	public double getFitness() {
-		
-		return fitness;
-	}
-   
 
     public void initTaboo() {
     	
