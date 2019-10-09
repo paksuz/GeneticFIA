@@ -10,12 +10,13 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 10000;
-    private int poblacionsize = 100;
+    private final int T = 20000;
+    private int poblacionsize = 3000;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
-    public double mutateRate=0.001;
+    public double mutateRate=0.05;
     public Random rnd = new Random();
-    private int tournamentSize=2;
+    private int tournamentSize=100;
+    public int numeromutaciones = 2;
     private double[] populationFitness;
     public void execute() {
         initRandom();
@@ -26,7 +27,15 @@ public class Genetic {
         
         run();
     }
-
+    private Solucion mutation(Solucion solution){
+    	int i = ThreadLocalRandom.current().nextInt(0, solution.nVariables -1);
+    	if(solution.x[i]==0) {
+			solution.x[i]=1;
+		}else  {
+			solution.x[i]=0;
+			}
+        return solution;
+    }
     
   
     
@@ -48,16 +57,18 @@ public class Genetic {
         		Solucion padreUno = this.tournamentSelection();
         		Solucion padreDos = this.tournamentSelection();
         		nuevaSolucion = this.crossover(padreUno, padreDos);
-        		nuevaSolucion.mutate(mutated_fixed);
-        		while(!nuevaSolucion.isFeasible()) {
-        			nuevaSolucion.mutate(mutated_fixed);
+        		for(int i=0;i<=numeromutaciones;i++) {
+        		nuevaSolucion = this.mutation(nuevaSolucion);
+        		}
+        			while(!nuevaSolucion.isFeasible()) {
+        				nuevaSolucion = this.mutation(nuevaSolucion);
         		}
         		esUnico = this.isUnique(nuevaSolucion);
         		
         		
         	}
         	this.replace(nuevaSolucion);
-
+        	
      		 t++;
             
          toConsole(t);
