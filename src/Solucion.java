@@ -9,8 +9,9 @@ public class Solucion implements Cloneable {
     public int[] pBest = new int[nVariables];
     private double v;
     public double rank ;
-    int[] taboo = new int[nVariables]; //variable taboo
- 
+    public	boolean haCambiado = false;
+    public int	cambio =0;
+    
 
 
     public Solucion() {
@@ -33,28 +34,6 @@ public class Solucion implements Cloneable {
     }
 
 
- public double fitnesspBest() {
-     double suma = 0;
-     for (int j = 0; j < nVariables; j++) {
-         suma += pBest[j] * SetCoveringInstanceFile.getInstance().getCosts()[j];
-     }
-     return suma;
- }
-	 
-
- 
-    public void mutate(double rate) {
-    	for(int i=0;i<nVariables;i++) {
-        	double random = ThreadLocalRandom.current().nextDouble(0,1);
-    		if(rate <= random) {
-    			if(this.x[i]==0) {
-    				this.x[i]=1;
-    			}else  {
-    				this.x[i]=0;
-       			}
-    		}
-    	} 	
-    }
 
     public boolean isFeasible() {
         int contRestCubiertas = 0;
@@ -96,14 +75,7 @@ public class Solucion implements Cloneable {
     }
 
 
-    public void initTaboo() {
-    	
-    	for(int i=0;i<nVariables;i++) {
-    		
-    		taboo[i]=0;
-    	}
-    	
-    }
+
     public void set(int i, int x) {
     	 this.x[i]= x;
     }
