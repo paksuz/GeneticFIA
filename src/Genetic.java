@@ -10,18 +10,23 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 100000;
+    private final int T = 10000;
     private int poblacionsize = 40;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
     public Random rnd = new Random();
     private int tournamentSize=2;
-    public int numeromutaciones = 2;
+    public int numeromutaciones = 1;
     private double[] populationFitness;
-    Solucion auxBest = null;
-    public int numeroClusters= 2;
+    Solucion auxBest = new Solucion();
+    public int numeroClusters= 20;
     public double distEc = 21.5;
-    public int contador = 0;
+    public double distManhattan = 21.5;
+    public int distanciaHamming = 460;
+    public int T_clustering = 5;
+    public int contador=0;
+
+    
 
     public void execute() {
         initRandom();
@@ -34,9 +39,6 @@ public class Genetic {
     }
     
    
-    	
-    	
-    	
 
     private Solucion mutation(Solucion solution){
     	int i = ThreadLocalRandom.current().nextInt(0, solution.nVariables -1);
@@ -48,16 +50,11 @@ public class Genetic {
         return solution;
     }
     
-  
-    
-   
-    
     private void run() {
     	double tfixed = 0.0;
     	 
     	int t = 0;
         while (t < T) {
-        	
         	 auxBest = getBest();
         	double aux = getBestFitness();
         	boolean esUnico = false;
@@ -76,8 +73,7 @@ public class Genetic {
         				
         		}
         		esUnico = this.isUnique(poblacion,nuevaSolucion);
-        		
-        		
+        	
         	}
         	this.replace(nuevaSolucion);
         	for(int i=0;i<poblacion.size();i++) {
@@ -87,16 +83,18 @@ public class Genetic {
         	}
         			if(getBestFitness()==aux) {
         				contador++;
+        				
         			}else {
         				contador=0;
+        				
         			}
         		
-        	
-        		if(contador==5000) {
+        			 
+        			if(contador==T_clustering) {
         			
         		  ArrayList<Solucion> poblacionCluster = new ArrayList<>();
         		  for(int i=0;i<numeroClusters;i++) {
-        		//  System.out.println("Cluster :"+(i+1)+"iniciado");
+        		 
         			  Solucion nueva = null;
         			Cluster cluster = new Cluster();
         			
@@ -107,7 +105,8 @@ public class Genetic {
         				while(!aux1) {
         					
         					
-        				nueva = creaconDistanciaEc(getBest());
+        				nueva = creaconDistanciaManhattan(getBest());
+        				
         					if(isUnique(cluster.poblacion,nueva)) {
         						aux1=true;
         						
@@ -127,10 +126,9 @@ public class Genetic {
         		
         		this.poblacion = poblacionCluster;
         		calculateAllFitness();
-        		contador=0;
-        		
-        	}
         	
+        	}
+       	
      		 t++;
             
          toConsole(t);
@@ -177,25 +175,6 @@ public class Genetic {
     }
     
     
-    
-   public int secondMin() {
-	   
-	   double min=getBestFitness();
-	   int index=0;
-	   double secondmin=Double.MAX_VALUE;
-	   	for(int i=0;i<poblacion.size();i++) {
-	   		if(populationFitness[i]<secondmin && populationFitness [i]!= min) {
-	   			secondmin = populationFitness[i];
-	   			index = i;
-	   			
-	   		}
-	   		
-	   		
-	   	}
-	   	return index;
-   }
-    
-    
     public void initRandom() {
         Solucion p;
         
@@ -215,12 +194,29 @@ public class Genetic {
     }
 
     
+    public Solucion creaconDistanciaHamming(Solucion c) {
+ 	   boolean aux = false;
+ 	   Solucion p = c;
+ 	   while(!aux) {
+ 		   p = new Solucion();
+ 		   if(p.distanciaHamming(c)<=distanciaHamming && p.isFeasible()) {
+ 	//		   System.out.println("true");
+ 			   aux=true;
+ 		   }
+ 	   
+ 		
+ 	   }
+ 	  return p;
+ 	   }
+ 	   
+ 	   
+    
    public Solucion creaconDistanciaEc(Solucion c) {
 	   boolean aux = false;
 	   Solucion p = c;
 	   while(!aux) {
 		   p = new Solucion();
-		   if(p.distanciaEuclideana(c)<distEc && p.isFeasible()&& p.distanciaEuclideana(c)!=0) {
+		   if(p.distanciaEuclideana(c)<distEc && p.isFeasible()) {
 	//		   System.out.println("true");
 			   aux=true;
 		   }
@@ -230,6 +226,25 @@ public class Genetic {
 		   
 	 
 	   
+	//  
+	   return p;
+	   
+	   
+   }
+   public Solucion creaconDistanciaManhattan(Solucion c) {
+	   boolean aux = false;
+	   Solucion p = null;
+	   while(!aux) {
+		   p = new Solucion();
+		   if(p.distanciaManhattan(c)<distManhattan && p.isFeasible()) {
+		
+			   aux=true;
+		   }
+	   
+		
+	   }
+		   
+	
 	//   System.out.println(c.distanciaEuclideana(p));
 	   return p;
 	   

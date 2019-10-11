@@ -59,9 +59,33 @@ public class Solucion implements Cloneable {
 	int d = 0;
 	for (int i = 0; i < nVariables; i++) {
 	    d += Math.pow(x[i] - destino.x[i], 2);
+	  
 	}
 	
 	return Math.sqrt(d);
+    }
+    
+    
+    
+    public Double distanciaManhattan(Solucion destino) {
+	int d = 0;
+	for (int i = 0; i < nVariables; i++) {
+	    d += Math.abs(x[i] - destino.x[i]);
+	}
+	
+	return Math.sqrt(d);
+    }
+    
+    
+    public int distanciaHamming(Solucion destino) {
+	int d = 0;
+	for (int i = 0; i < nVariables; i++) {
+	    if(x[i] !=destino.x[i]) {
+	    	d++;
+	    }
+	}
+	
+	return d;
     }
    
     @Override
