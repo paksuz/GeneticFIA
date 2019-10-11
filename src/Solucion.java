@@ -60,6 +60,7 @@ public class Solucion implements Cloneable {
 	for (int i = 0; i < nVariables; i++) {
 	    d += Math.pow(x[i] - destino.x[i], 2);
 	}
+	
 	return Math.sqrt(d);
     }
    

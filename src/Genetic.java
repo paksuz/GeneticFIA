@@ -10,15 +10,18 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 20000;
-    public int iteracionesparacambio = 2;
-    private int poblacionsize = 100;
+    private final int T = 50000;
+    private int poblacionsize = 40;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
     public Random rnd = new Random();
-    private int tournamentSize=10;
-    public int numeromutaciones = 10;
+    private int tournamentSize=2;
+    public int numeromutaciones = 2;
     private double[] populationFitness;
+    Solucion auxBest = null;
+    public int numeroClusters= 2;
+    public double distEc = 21.5;
+
     public void execute() {
         initRandom();
      
@@ -29,40 +32,11 @@ public class Genetic {
         run();
     }
     
-    public void checkCambio() {
-    	for(int i=0;i<poblacion.size();i++) {
-    		if(!poblacion.get(i).haCambiado) {
-    			
-    			if(poblacion.get(i).cambio<iteracionesparacambio) {
-    				poblacion.get(i).cambio=  poblacion.get(i).cambio + 1;
+   
+    	
+    	
+    	
 
-    			//	System.out.println("Cambio:"+poblacion.get(i).cambio);
-    			}else {
-    				
-    				do{
-    					//System.out.println("Mutando las que no cambian");
-    					poblacion.set(i, mutation(poblacion.get(i)));
-    				}while(!poblacion.get(i).isFeasible());
-    				
-    			}
-    			
-    		}
-    		
-    		
-    	}
-    	
-    	
-    	
-    }
-    public void sethaCambiado() {
-    	for (int i=0;i<poblacion.size();i++) {
-    		if(poblacion.get(i).haCambiado) {
-    		poblacion.get(i).haCambiado=false;
-    		}else {
-    			poblacion.get(i).cambio++;
-    		}
-    	}
-    }
     private Solucion mutation(Solucion solution){
     	int i = ThreadLocalRandom.current().nextInt(0, solution.nVariables -1);
     	if(solution.x[i]==0) {
@@ -82,18 +56,16 @@ public class Genetic {
     	 
     	int t = 0;
         while (t < T) {
-        	if(t < 5000) {
-        		numeromutaciones = 20;
-        	}
         	
-        	
+        	 auxBest = getBest();
+        	double aux = getBestFitness();
         	boolean esUnico = false;
         	Solucion nuevaSolucion = null;
 
 
         	while(!esUnico) {
         		Solucion padreUno = this.tournamentSelection();
-        		Solucion padreDos = this.tournamentSelection();
+        		Solucion padreDos = getBest();
         		nuevaSolucion = this.crossover(padreUno, padreDos);
         		for(int i=0;i<=numeromutaciones;i++) {
         		nuevaSolucion = this.mutation(nuevaSolucion);
@@ -102,7 +74,7 @@ public class Genetic {
         				nuevaSolucion = this.mutation(nuevaSolucion);
         				
         		}
-        		esUnico = this.isUnique(nuevaSolucion);
+        		esUnico = this.isUnique(poblacion,nuevaSolucion);
         		
         		
         	}
@@ -113,13 +85,62 @@ public class Genetic {
         		}
         	}
         	
-        	//checkCambio();
-        //	sethaCambiado();
+        	
+        	if(t%50==0 && t!=0) {
+        	
+        		  ArrayList<Solucion> poblacionCluster = new ArrayList<>();
+        		  for(int i=0;i<numeroClusters;i++) {
+        		//  System.out.println("Cluster :"+(i+1)+"iniciado");
+        			  Solucion nueva = null;
+        			Cluster cluster = new Cluster();
+        			
+        			cluster.setPoblacion(getBest());
+        		//	System.out.println("Cluster:"+(i+1)+" Centroide: "+cluster.poblacion.get(0).fitness());
+        			for(int j=0;j<poblacionsize/numeroClusters-1;j++) {
+        				boolean aux1 = false;
+        				while(!aux1) {
+        					
+        					
+        				nueva = creaconDistanciaEc(getBest());
+        					if(isUnique(cluster.poblacion,nueva)) {
+        						aux1=true;
+        						
+        					}
+        				
+        				}
+       				cluster.setPoblacion(nueva);
+        				
+        			}
+        			clearBest();
+        				
+        			
+        			poblacionCluster.addAll(cluster.poblacion);
+        			
+        			
+        		}
+        		
+        		this.poblacion = poblacionCluster;
+        		calculateAllFitness();
+        		
+        	}
+        	
      		 t++;
             
          toConsole(t);
         }
 
+    }
+    public void clearBest() {
+    	double aux = getBestFitness();
+    	//System.out.println("FitnessBest:"+getBestFitness());
+    	for(int i=0;i<populationFitness.length;i++) {
+    		if(populationFitness[i]==aux) {
+    		//	System.out.println("Fitness:"+populationFitness[i]+" set to Max");
+    			populationFitness[i]=Double.MAX_VALUE;
+    		}
+    		
+    	}
+    	
     }
 
     private void replace(Solucion solution){
@@ -143,12 +164,31 @@ public class Genetic {
     }
     
     
-
+    public double porcentajeCambio(double nuevo, double viejo) {
+    	double valordecremento = viejo-nuevo;
+    	return(valordecremento/viejo)*100;
+    }
     
     
     
-   
-       
+   public int secondMin() {
+	   
+	   double min=getBestFitness();
+	   int index=0;
+	   double secondmin=Double.MAX_VALUE;
+	   	for(int i=0;i<poblacion.size();i++) {
+	   		if(populationFitness[i]<secondmin && populationFitness [i]!= min) {
+	   			secondmin = populationFitness[i];
+	   			index = i;
+	   			
+	   		}
+	   		
+	   		
+	   	}
+	   	return index;
+   }
+    
+    
     public void initRandom() {
         Solucion p;
         
@@ -166,6 +206,28 @@ public class Genetic {
       /*  toConsole(0);
         System.out.println();*/
     }
+
+    
+   public Solucion creaconDistanciaEc(Solucion c) {
+	   boolean aux = false;
+	   Solucion p = c;
+	   while(!aux) {
+		   p = new Solucion();
+		   if(p.distanciaEuclideana(c)<distEc && p.isFeasible()&& p.distanciaEuclideana(c)!=0) {
+	//		   System.out.println("true");
+			   aux=true;
+		   }
+	   
+		
+	   }
+		   
+	 
+	   
+	//   System.out.println(c.distanciaEuclideana(p));
+	   return p;
+	   
+	   
+   }
     
     private Solucion tournamentSelection(){
         Solucion best = null;
@@ -181,9 +243,9 @@ public class Genetic {
         }
         return best;
     }
-    private boolean isUnique(Solucion solution){
-        for(int i=0;i<populationFitness.length;i++) {
-        	if(this.populationFitness[i]== solution.fitness()) {
+    private boolean isUnique(ArrayList<Solucion> lista,Solucion solution){
+        for(int i=0;i<lista.size();i++) {
+        	if(lista.get(i).getCopy().fitness()== solution.fitness()) {
         		return false;
         	}
         }
@@ -221,11 +283,57 @@ public class Genetic {
         }
         return bestFitness;
     }
+    private Solucion getBest(){
+        double bestFitness = Double.MAX_VALUE;
+        int index=0;
+        for (int i = 0;i < this.poblacionsize;i++){
+            if (this.populationFitness[i] < bestFitness) {
+                bestFitness = this.populationFitness[i];
+            index = i;
+            
+        }
+        }
+        return poblacion.get(index).getCopy();
+    }
+    
+    
+    
+ 
+    public ArrayList<Solucion> clusteringPoblacion(int k){
+    	
+    	ArrayList<Solucion> poblacionCluster;
+    	
+    	for(int j=0;j<poblacion.size()/k;j++) {    		
+    		 double bestFitness = Integer.MAX_VALUE;
+    		 int minindex=0;
+    		 for (int i = 0;i < this.poblacionsize;i++){
+    	            if (this.populationFitness[i] < bestFitness)
+    	                bestFitness = this.populationFitness[i];
+    	            	minindex = i;
+    	        }
+    		 Cluster cluster = new Cluster();
+    		 cluster.Clusterinit(poblacion.get(minindex));
+    		 this.populationFitness[minindex]=Double.MAX_VALUE;
+    		 
+    		 
+    		 
+    		
+    	}
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	return poblacion;
+    }
 
 
 
  private void toConsole(int t) {
     	System.out.println("Generation:  " + t + " Fittest:  " +getBestFitness() );
+    	
     	
 
     }
