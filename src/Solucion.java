@@ -87,6 +87,18 @@ public class Solucion implements Cloneable {
 	
 	return d;
     }
+    
+    public  double cosineSimilarity(Solucion destino) {
+	    int dotProduct = 0;
+	    int normA = 0;
+	    int normB = 0;
+	    for (int i = 0; i < nVariables ; i++) {
+	        dotProduct += x[i] * destino.x[i];
+	        normA += Math.pow(x[i], 2);
+	        normB += Math.pow(destino.x[i], 2);
+	    }   
+	    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+	}
    
     @Override
     public boolean equals(Object obj) {
