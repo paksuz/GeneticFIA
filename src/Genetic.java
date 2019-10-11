@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 10000;
+    private final int T = 100000;
     private int poblacionsize = 40;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
@@ -19,12 +19,12 @@ public class Genetic {
     public int numeromutaciones = 1;
     private double[] populationFitness;
     Solucion auxBest = new Solucion();
-    public int numeroClusters= 20;
-    public double distEc = 21.5;
-    public double distManhattan = 21.5;
-    public int distanciaHamming = 460;
-    public int T_clustering = 5;
-    public int contador=0;
+    public int numeroClusters= 20;//el mejor numero de clusters es el maximo divisor del tamaño de la poblacion
+    public double distEc = 21.5; // min dist ec sin que falle
+    public double distManhattan = 21.5; // min dist manhattan sin que falle
+    public int distanciaHamming = 460; //min distHamming sin que falle
+    public int T_clustering = 5; // 5 generaciones para mejorar, sino se hace clustering
+    public int contador=0; //contador para llevar la cuenta de las generaciones estancadas
 
     
 
@@ -105,7 +105,7 @@ public class Genetic {
         				while(!aux1) {
         					
         					
-        				nueva = creaconDistanciaManhattan(getBest());
+        				nueva = creaconDistanciaHamming(getBest());
         				
         					if(isUnique(cluster.poblacion,nueva)) {
         						aux1=true;
