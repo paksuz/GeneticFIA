@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 50000;
+    private final int T = 100000;
     private int poblacionsize = 40;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
@@ -21,6 +21,7 @@ public class Genetic {
     Solucion auxBest = null;
     public int numeroClusters= 2;
     public double distEc = 21.5;
+    public int contador = 0;
 
     public void execute() {
         initRandom();
@@ -65,7 +66,7 @@ public class Genetic {
 
         	while(!esUnico) {
         		Solucion padreUno = this.tournamentSelection();
-        		Solucion padreDos = getBest();
+        		Solucion padreDos = this.tournamentSelection();
         		nuevaSolucion = this.crossover(padreUno, padreDos);
         		for(int i=0;i<=numeromutaciones;i++) {
         		nuevaSolucion = this.mutation(nuevaSolucion);
@@ -84,10 +85,15 @@ public class Genetic {
         			
         		}
         	}
+        			if(getBestFitness()==aux) {
+        				contador++;
+        			}else {
+        				contador=0;
+        			}
+        		
         	
-        	
-        	if(t%50==0 && t!=0) {
-        	
+        		if(contador==5000) {
+        			
         		  ArrayList<Solucion> poblacionCluster = new ArrayList<>();
         		  for(int i=0;i<numeroClusters;i++) {
         		//  System.out.println("Cluster :"+(i+1)+"iniciado");
@@ -121,6 +127,7 @@ public class Genetic {
         		
         		this.poblacion = poblacionCluster;
         		calculateAllFitness();
+        		contador=0;
         		
         	}
         	
