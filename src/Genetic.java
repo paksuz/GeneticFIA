@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 100;
+    private final int T = 1000;
     private int poblacionsize = 20;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
@@ -30,6 +30,7 @@ public class Genetic {
     public int promedio=0;
     public int contador=0; //contador para llevar la cuenta de las generaciones estancadas
     public boolean auxiliar = true;
+    public Double mejor,peor;
 
     
 
@@ -57,8 +58,9 @@ public class Genetic {
     
     private void run() {
     	
-    	 
+    	boolean clust = false;
     	int t = 0;
+    	peor = getBestFitness();
         while (t < T) {
         	
         	promedio += getBestFitness();
@@ -85,7 +87,7 @@ public class Genetic {
         	this.replace(nuevaSolucion);
         
         	
-        		
+        if(clust == true) {
         			 
        		if(t%T_clustering ==0 && t != 0) { // inicio clustering
        // 		System.out.println("clustering...");
@@ -133,16 +135,38 @@ public class Genetic {
         		calculateAllFitness();
         	
         	}//fin clustering*/
-        			
+        }			
         	//		deathrate();
        		
      		 t++;
             
-         toConsole(t);
-        }
+        // toConsole(t);
+       
+        if(clust==false&&t==T) {
+        mejor= getBestFitness();
         promedio = promedio/T;
-        System.out.println("Promedio:"+promedio);
+        System.out.println("Promedio sin cluster:"+promedio);
+        System.out.println("Mejor:"+mejor+ " Peor:"+peor);
+        promedio=0;
+        
+        clust=true;
+        t=0;
+        poblacion.clear();
+        initRandom();
+        calculateAllFitness();
+        peor=getBestFitness();
 
+       
+        }
+        if(clust==true && t==T) {
+        	mejor=getBestFitness();
+        	promedio = promedio/T;
+            System.out.println("Promedio con cluster:"+promedio);
+            System.out.println("Mejor:"+mejor+" Peor:"+peor);
+
+        }
+        
+        }
     }
     public void clearBest() {
     	double aux = getBestFitness();
