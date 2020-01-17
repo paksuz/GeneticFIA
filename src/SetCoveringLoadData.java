@@ -90,7 +90,7 @@ public class SetCoveringLoadData {
     private static final String PATH = "resources/input/";
 
     private static final String[] SCP_FILES = {
-       /* "scp41.txt",
+      /*  "scp41.txt",/*
         "scp42.txt",
         "scp43.txt",
         "scp44.txt",
@@ -99,7 +99,7 @@ public class SetCoveringLoadData {
         "scp47.txt",
         "scp48.txt",
         "scp49.txt",
-        "scp410.txt"/*,
+        "scp410.txt",
         "scp51.txt",
         "scp52.txt",
         "scp53.txt",
@@ -109,7 +109,7 @@ public class SetCoveringLoadData {
         "scp57.txt",
         "scp58.txt",
         "scp59.txt",
-        */"scp510.txt",/*
+       */ "scp510.txt",/*
         "scp61.txt",
         "scp62.txt",
         "scp63.txt",
@@ -134,7 +134,7 @@ public class SetCoveringLoadData {
         "scpd2.txt",
         "scpd3.txt",
         "scpd4.txt",
-        "scpd5.txt",
+       "scpd5.txt",
         "scpnre1.txt",
         "scpnre2.txt",
         "scpnre3.txt",

@@ -10,21 +10,24 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 30000;
-    private int poblacionsize = 40;
+    private final int T = 25000;
+    private int poblacionsize = 20;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
     public Random rnd = new Random();
-    private int tournamentSize=2;
+    private int tournamentSize=6;
     public int numeromutaciones = 1;
+    public double deathrate = 0.01;
     private double[] populationFitness;
     Solucion auxBest = new Solucion();
-    public int numeroClusters= 20;//
-    public double distEc = 21.5; // 
-    public double distManhattan = 70; // 
-    public int distanciaHamming = 460; //los valores de las distancias promedio en tre los vectores de cada archivo cambia
-    public int T_clustering = 10; // 
-    public double similitudCoseno = 0.489;
+    public int numeroClusters= 2;//
+    public double distEc = 21.5; // 1154
+    public double distManhattan = 21.5; // 1030
+    public int distanciaHamming = 460; //886
+    public double similitudCoseno = 0.49; //scp410 scp65 0,41, scp510 0,47
+    public int T_clustering = 500; // 
+    SetCoveringInstanceFile scif = new SetCoveringInstanceFile();
+    
     public int contador=0; //contador para llevar la cuenta de las generaciones estancadas
     public boolean auxiliar = true;
 
@@ -57,6 +60,8 @@ public class Genetic {
     	 
     	int t = 0;
         while (t < T) {
+        	
+
         	 auxBest = getBest();
         	double aux = getBestFitness();
         	boolean esUnico = false;
@@ -64,7 +69,7 @@ public class Genetic {
 
 
         	while(!esUnico) {
-        		Solucion padreUno = this.tournamentSelection();
+        		Solucion padreUno = getBest();
         		Solucion padreDos = this.tournamentSelection();
         		nuevaSolucion = this.crossover(padreUno, padreDos);
         		for(int i=0;i<=numeromutaciones;i++) {
@@ -78,21 +83,13 @@ public class Genetic {
         	
         	}
         	this.replace(nuevaSolucion);
-        	for(int i=0;i<poblacion.size();i++) {
-        		if(poblacion.get(i).haCambiado) {
-        			
-        		}
-        	}
-        			if(getBestFitness()==aux) {
-        				contador++;
-        				
-        			}else {
-        				contador=0;
-        				
-        			}
+        
+        	
         		
         			 
-        			if(contador==T_clustering) { // inicio clustering
+       		if(t%T_clustering ==0 && t != 0) { // inicio clustering
+       // 		System.out.println("clustering...");
+        			
         				if(auxiliar) {
         					T_clustering=T_clustering/2;
         					auxiliar = false;
@@ -105,13 +102,15 @@ public class Genetic {
         			Cluster cluster = new Cluster();
         			
         			cluster.setPoblacion(getBest());
+        			//this.poblacion.remove(getBest());
         		//	System.out.println("Cluster:"+(i+1)+" Centroide: "+cluster.poblacion.get(0).fitness());
         			for(int j=0;j<poblacionsize/numeroClusters-1;j++) {
         				boolean aux1 = false;
+        				
         				while(!aux1) {
         					
         					
-        				nueva = creaconDistanciaManhattan(getBest());
+        				nueva = creaconSimilitudCoseno(getBest());
         				
         					if(isUnique(cluster.poblacion,nueva)) {
         						aux1=true;
@@ -134,6 +133,8 @@ public class Genetic {
         		calculateAllFitness();
         	
         	}//fin clustering*/
+        			
+        	//		deathrate();
        	
      		 t++;
             
@@ -181,6 +182,27 @@ public class Genetic {
     }
     
     
+    public void deathrate() {
+    	Solucion  vive= null;
+   
+    	for(int i=0;i<poblacion.size();i++) {
+    		double random = ThreadLocalRandom.current().nextDouble(0, 1);
+    			if(random < deathrate) {
+    				
+    				do {
+    				 vive = new Solucion();
+    				}while(!vive.isFeasible());
+    				this.poblacion.set(i, vive);
+    				this.populationFitness[i]=vive.fitness();
+    			}
+    		
+    	}
+    	
+    
+    	
+    }
+    
+    
     public void initRandom() {
         Solucion p;
         
@@ -213,7 +235,7 @@ public class Genetic {
  	   
  		
  	   }
- 	
+ //	  System.out.println(c.distanciaHamming(p));
  	  return p;
  	   }
  	   
@@ -233,7 +255,7 @@ public class Genetic {
 	   }
 		   
 	  
-	   
+	  // System.out.println(c.distanciaEuclideana(p));
 	//  
 	   return p;
 	 
@@ -245,13 +267,13 @@ public class Genetic {
 	   
 	   while(!aux) {
 		   p = new Solucion();
-		  System.out.println(p.distanciaManhattan(c));
+		
 		   if(p.distanciaManhattan(c)<distManhattan && p.isFeasible()) {
 			   
 			   aux=true;
 		   }
 	    }
-	
+	  // System.out.println(c.distanciaManhattan(p));
 	   return p;  
    }
    public Solucion creaconSimilitudCoseno(Solucion c) {
@@ -259,12 +281,13 @@ public class Genetic {
 	   Solucion p = null;
 	   while(!aux) {
 		   p = new Solucion();
+	//	System.out.println(c.cosineSimilarity(p));
+
 		   if(p.cosineSimilarity(c)<similitudCoseno && p.isFeasible()) {
 		
 			   aux=true;
 		   }
 	    }
-	//   System.out.println(c.distanciaEuclideana(p));
 	   return p;  
    }
     
@@ -358,13 +381,6 @@ public class Genetic {
     		 
     		
     	}
-    	
-    	
-    	
-    	
-    	
-    	
-    	
     	return poblacion;
     }
 
@@ -373,12 +389,15 @@ public class Genetic {
  private void toConsole(int t) {
     	System.out.println("Generation:  " + t + " Fittest:  " +getBestFitness() );
     	
-    	
+    
 
     }
-
+ /* private void toConsole(int t) {
+	
+	System.out.println(String.format("%d:%s:%s", t,getBestFitness(),scif.getSeed()));
+}
 
  
-    
+    */
     
 }

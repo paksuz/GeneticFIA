@@ -31,6 +31,9 @@ public class SetCoveringInstanceFile {
     public int getRows() {
         return rows;
     }
+    public long getSeed() {
+        return seed;
+    }
 
     public void setRows(int rows) {
         this.rows = rows;
