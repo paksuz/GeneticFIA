@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Genetic {
 	
-    private final int T = 25000;
+    private final int T = 100;
     private int poblacionsize = 20;
     private  ArrayList<Solucion> poblacion = new ArrayList<>();
   //  public double mutateRate=0.05;
@@ -27,7 +27,7 @@ public class Genetic {
     public double similitudCoseno = 0.49; //scp410 scp65 0,41, scp510 0,47
     public int T_clustering = 500; // 
     SetCoveringInstanceFile scif = new SetCoveringInstanceFile();
-    
+    public int promedio=0;
     public int contador=0; //contador para llevar la cuenta de las generaciones estancadas
     public boolean auxiliar = true;
 
@@ -61,7 +61,7 @@ public class Genetic {
     	int t = 0;
         while (t < T) {
         	
-
+        	promedio += getBestFitness();
         	 auxBest = getBest();
         	double aux = getBestFitness();
         	boolean esUnico = false;
@@ -135,11 +135,13 @@ public class Genetic {
         	}//fin clustering*/
         			
         	//		deathrate();
-       	
+       		
      		 t++;
             
          toConsole(t);
         }
+        promedio = promedio/T;
+        System.out.println("Promedio:"+promedio);
 
     }
     public void clearBest() {
